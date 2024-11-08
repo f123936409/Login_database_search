@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <title>查詢餐廳</title>
+</head>
+<body>
+    <h1>Search Results</h1>
+    <form action="{{ url_for('search') }}" method="post">
+        <input type="text" name="keyword" placeholder="adress or restaurant_name">
+        <button type="submit">Search</button>
+    </form>
+    <table border="1">
+        <tr>
+            <th>name</th>
+            <th>rating</th>
+            <th>user_ratings_total</th>
+            <th>address</th>
+            <th>review</th>
+            <th>add_review</th>
+        </tr>
+        {% for restaurant in all_restaurant %}
+        <tr>
+            <td>{{ restaurant[1] }}</td>
+            <td>{{ restaurant[2] }}</td>
+            <td>{{ restaurant[3] }}</td>
+            <td>{{ restaurant[4] }}</td>
+            <td>{{ restaurant[5] }}</td>
+            <td><form action="{{ url_for('add_review', restaurant_id=restaurant[0]) }}" method="post">
+                <input type="text" name="review" placeholder="輸入你的評論">
+                <button type="submit">Add</button>
+            </form></td>
+        </tr>
+        {% endfor %}
+    </table>
+    <a href="{{ url_for('index') }}">Back to Home</a>
+</body>
+</html>

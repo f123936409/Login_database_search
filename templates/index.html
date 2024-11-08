@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>餐廳搜尋</title>
+</head>
+<body>
+    <h1>餐廳列表</h1>
+
+    <!-- 搜尋表單 -->
+    <form action="{{ url_for('search') }}" method="post">
+        <input type="text" name="keyword" placeholder="輸入餐廳或地址看評論">
+        <button type="submit">Search</button>
+    </form>
+
+    <h2>所有餐廳</h2>
+
+    {% for restaurant in all_restaurant %}
+    <div>
+        <h3>{{restaurant[0]}}.餐廳名稱: {{ restaurant[1] }}</h3>
+        <p>地址: {{ restaurant[4] }}</p>
+
+
+    </div>
+    {% endfor %}
+</body>
+</html>
