@@ -4,14 +4,13 @@
 #if __name__ == '__main__': #如果XX.py被直接執行的話 __name__ 就會== __main__
     #app.run(debug=True) #如果XX.py被引用到其他的話 import XX.py __name__ 就!= __main__ __main__就不會執行
 
-import googlemaps
 import mysql.connector
 import json
 import requests
-from prettytable import PrettyTable
 from flask import Flask, render_template, request, redirect, url_for
 from dotenv import load_dotenv
 import os
+from prettytable import PrettyTable
 
 #透過經緯度來查詢此地點附近餐廳 並存資料 規格是json
 #location = '25.01745568776056, 121.40282832703096'
@@ -25,6 +24,44 @@ import os
 #response = requests.get(URL)
 #data = response.json()
 #print(json.dumps(data, ensure_ascii=False, indent=4))
+class App:
+    def register(self, email, name, password):
+        connection = self.connect_to_db_user()
+        cursor = connection.cursor()
+        cursor.execute("SELECT email FROM user WHERE email= %s", (email,))
+        result = cursor.fetchone() #只抓取email值
+
+        if email == result[0]: #select from 輸出值為列表[ ] 因此需要[0]因為只有一個值
+            print("該email 被註冊")
+            # 如使用if result : (這邊只有判斷此email 是否為空值 或 none 沒辦法判斷有沒有重複)
+        else:
+            cursor.execute("insert into user (email, name, password) values (%s, %s, %s)",(email, name, password))
+            connection.commit()
+            print("註冊成功")
+        cursor.close()
+        connection.close()
+
+    def login(self, email, password):
+        connection = self.connect_to_db_user()
+        cursor = connection.cursor()
+        cursor.execute("SELECT email, password from user where email = %s",(email,))
+        result = cursor.fetchone()
+        if result:
+            db_email, db_password = result #解包 result
+            if password == db_password:
+                print("login 成功")
+            else:
+                print("密碼錯誤")
+        else:
+            print("該 email 錯誤 或 尚未被註冊")
+
+    def connect_to_db_user(self):
+        return mysql.connector.connect(user='root', password='12345678',
+                                       host='127.0.0.1', database='user')
+
+
+
+
 def restaurant_search():
     location = '25.01745568776056, 121.40282832703096'
     radius = 1000
@@ -75,6 +112,10 @@ def main():
 
 app = Flask(__name__) #導入模組並引用 模組名稱就是 (__name__) 固定
 @app.route("/")
+def first():
+    return render_template("login,html")
+
+@app.route("/index")
 def index():
     connection = connect_to_db()
     cursor = connection.cursor()
@@ -83,6 +124,7 @@ def index():
     cursor.close()
     connection.close()
     return render_template('index.html',all_restaurant=all_restaurant)
+
 
 @app.route('/search', methods=['POST'])
 def search():
@@ -108,6 +150,52 @@ def add_review(restaurant_id):
 
 if __name__ == '__main__':
     app.run(debug=True)
+
+class Login_function:
+    @app.route("/register",methods=['POST','GET'])
+    def register(self, email, name, password):
+        if request.method == "POST":
+            email = request.form.get("email")
+            name = request.form.get("name")
+            password = request.form.get("password")
+
+            connection = self.connect_to_db_user()
+            cursor = connection.cursor()
+
+            cursor.execute("SELECT email FROM user WHERE email= %s", (email,))
+            result = cursor.fetchone()  # 只抓取email值]
+
+            if result and email == result[0]:  # select from 輸出值為列表[ ] 因此需要[0]因為只有一個值
+                print("該email 被註冊")
+                # 如使用if result : (這邊只有判斷此email 是否為空值 或 none 沒辦法判斷有沒有重複)
+            else:
+                cursor.execute("insert into user (email, name, password) values (%s, %s, %s)", (email, name, password))
+                connection.commit()
+                print("註冊成功")
+                cursor.close()
+                connection.close()
+                return redirect(url_for("login"))
+
+    @app.route("/Login",methods=['POST','GET'])
+    def login(self, email, password):
+        connection = self.connect_to_db_user()
+        cursor = connection.cursor()
+        cursor.execute("SELECT email, password from user where email = %s", (email,))
+        result = cursor.fetchone()
+        if result:
+            db_email, db_password = result  # 解包 result
+            if password == db_password:
+                print("login 成功")
+            else:
+                print("密碼錯誤")
+        else:
+            print("該 email 錯誤 或 尚未被註冊")
+
+    def connect_to_db_user(self):
+        return mysql.connector.connect(user='root', password='12345678',
+                                       host='127.0.0.1', database='user')
+
+
 
 
 
