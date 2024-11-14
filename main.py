@@ -24,7 +24,7 @@ from prettytable import PrettyTable
 #response = requests.get(URL)
 #data = response.json()
 #print(json.dumps(data, ensure_ascii=False, indent=4))
-class App:
+class App1111:
     def register(self, email, name, password):
         connection = self.connect_to_db_user()
         cursor = connection.cursor()
@@ -38,8 +38,9 @@ class App:
             cursor.execute("insert into user (email, name, password) values (%s, %s, %s)",(email, name, password))
             connection.commit()
             print("註冊成功")
-        cursor.close()
-        connection.close()
+            cursor.close()
+            connection.close()
+            return redirect(url_for("login"))
 
     def login(self, email, password):
         connection = self.connect_to_db_user()
@@ -105,98 +106,140 @@ def restaurant_data(connection):
 
 def main():
     connection = connect_to_db()
-    #data = restaurant_search() #因已經有資料 所以暫時不需要從google導入資料
-    #insert_restaurant(connection, data) #因已經寫入 所以不需要新的資料
+    data = restaurant_search() #因已經有資料 所以暫時不需要從google導入資料
+    insert_restaurant(connection, data) #因已經寫入 所以不需要新的資料
     restaurant_data(connection)
     connection.close()
 
 app = Flask(__name__) #導入模組並引用 模組名稱就是 (__name__) 固定
-@app.route("/")
-def first():
-    return render_template("login,html")
+class dataSearch:
+    def __init__(self):
+        self.app = app
+        self.app.add_url_rule('/',view_func=self.first)
+        self.app.add_url_rule('/index',view_func=self.index)
+        self.app.add_url_rule('/search',view_func=self.search,methods=['POST'])
+        self.app.add_url_rule('/add_review/<int:restaurant_id>',view_func=self.add_review,methods=['POST'])
+    #@app.route("/")
+    def first(self):
+        return render_template("login.html")
 
-@app.route("/index")
-def index():
-    connection = connect_to_db()
-    cursor = connection.cursor()
-    cursor.execute("select * from choose_restaurant")
-    all_restaurant = cursor.fetchall()
-    cursor.close()
-    connection.close()
-    return render_template('index.html',all_restaurant=all_restaurant)
+    #@app.route("/index")
+    def index(self):
+        connection = self.connect_to_db()
+        cursor = connection.cursor()
+        cursor.execute("select * from choose_restaurant")
+        all_restaurant = cursor.fetchall()
+        cursor.close()
+        connection.close()
+        return render_template('index.html',all_restaurant=all_restaurant)
 
 
-@app.route('/search', methods=['POST'])
-def search():
-    keyword = request.form.get('keyword')
-    connection = connect_to_db()
-    cursor = connection.cursor()
-    cursor.execute("SELECT * from choose_restaurant where name like %s or address like %s",(f"%{keyword}%", f"%{keyword}%"))
-    search_results = cursor.fetchall()
-    cursor.close()
-    connection.close()
-    return render_template('search.html', all_restaurant=search_results)
+    #@app.route('/search', methods=['POST'])
+    def search(self):
+        keyword = request.form.get('keyword')
+        connection = self.connect_to_db()
+        cursor = connection.cursor()
+        cursor.execute("SELECT * from choose_restaurant where name like %s or address like %s",(f"%{keyword}%", f"%{keyword}%"))
+        search_results = cursor.fetchall()
+        cursor.close()
+        connection.close()
+        return render_template('search.html', all_restaurant=search_results)
 
-@app.route('/add_review/<int:restaurant_id>', methods=['POST'])
-def add_review(restaurant_id):
-    new_review = request.form.get('review')
-    connection = connect_to_db()
-    cursor = connection.cursor()
-    cursor.execute("UPDATE choose_restaurant SET review = %s WHERE id = %s", (new_review, restaurant_id))
-    connection.commit()
-    cursor.close()
-    connection.close()
-    return redirect(url_for('index'))
+    #@app.route('/add_review/<int:restaurant_id>', methods=['POST'])
+    def add_review(self,restaurant_id):
+        new_review = request.form.get('review')
+        connection = self.connect_to_db()
+        cursor = connection.cursor()
+        cursor.execute("UPDATE choose_restaurant SET review = %s WHERE id = %s", (new_review, restaurant_id))
+        connection.commit()
+        cursor.close()
+        connection.close()
+        return redirect(url_for('index'))
 
-if __name__ == '__main__':
-    app.run(debug=True)
+    def connect_to_db(self):
+        return mysql.connector.connect(user='root', password='12345678',
+                                       host='127.0.0.1', database='what_restaurant')
+
+
 
 class Login_function:
-    @app.route("/register",methods=['POST','GET'])
-    def register(self, email, name, password):
+    def __init__(self):
+        self.app = app
+        self.app.add_url_rule('/register',view_func=self.register, methods=['POST','GET'])
+        self.app.add_url_rule('/login',view_func=self.login,methods=['POST','GET'])
+
+    #@app.route("/register",methods=['POST','GET'])
+#app.route 內容= self.add_url_rule('/',endpoint='',view_func=只需要寫函數名稱不能+(),methods)
+    def register(self):
         if request.method == "POST":
             email = request.form.get("email")
             name = request.form.get("name")
             password = request.form.get("password")
+            print(f"Email: {email}, Name: {name}, Password: {password}")
+            try:
+                connection = self.connect_to_db_user()
+                cursor = connection.cursor()
 
-            connection = self.connect_to_db_user()
-            cursor = connection.cursor()
+                cursor.execute("SELECT email FROM user WHERE email= %s", (email,))
+                result = cursor.fetchone()  # 只抓取email值]
 
-            cursor.execute("SELECT email FROM user WHERE email= %s", (email,))
-            result = cursor.fetchone()  # 只抓取email值]
+                if result and email == result[0]:  # select from 輸出值為列表[ ] 因此需要[0]因為只有一個值
+                    print("該email 被註冊")
+                    return render_template("register.html", message="該email 已經被註冊")
+                    # 如使用if result : (這邊只有判斷此email 是否為空值 或 none 沒辦法判斷有沒有重複)
+                else:
+                    cursor.execute("insert into user (email, name, password) values (%s, %s, %s)", (email, name, password))
+                    connection.commit()
+                    print("註冊成功")
+                    return redirect(url_for("login"))
 
-            if result and email == result[0]:  # select from 輸出值為列表[ ] 因此需要[0]因為只有一個值
-                print("該email 被註冊")
-                # 如使用if result : (這邊只有判斷此email 是否為空值 或 none 沒辦法判斷有沒有重複)
-            else:
-                cursor.execute("insert into user (email, name, password) values (%s, %s, %s)", (email, name, password))
-                connection.commit()
-                print("註冊成功")
+            except Exception as e:
+                print(f"發生錯誤: {e}")
+                return render_template("register.html", message="註冊過程中出現錯誤")  # 顯示錯誤訊息
+
+            finally:
                 cursor.close()
                 connection.close()
-                return redirect(url_for("login"))
 
-    @app.route("/Login",methods=['POST','GET'])
-    def login(self, email, password):
-        connection = self.connect_to_db_user()
-        cursor = connection.cursor()
-        cursor.execute("SELECT email, password from user where email = %s", (email,))
-        result = cursor.fetchone()
-        if result:
-            db_email, db_password = result  # 解包 result
-            if password == db_password:
-                print("login 成功")
-            else:
-                print("密碼錯誤")
-        else:
-            print("該 email 錯誤 或 尚未被註冊")
+        elif request.method == "GET":
+                return render_template("register.html")
+
+    #@app.route("/login",methods=['POST','GET'])
+    def login(self):
+        if request.method == "POST":
+            email = request.form.get("email")
+            password = request.form.get("password")
+            try:
+                connection = self.connect_to_db_user()
+                cursor = connection.cursor()
+                cursor.execute("SELECT email, password from user where email = %s", (email,))
+                result = cursor.fetchone()
+                if result:
+                    db_email, db_password = result  # 解包 result
+                    if password == db_password:
+                        print("login 成功")
+                        return redirect(url_for("index"))
+                    else:
+                        print("密碼錯誤")
+                        return redirect(url_for("login"))
+                else:
+                    print("該 email 錯誤 或 尚未被註冊")
+                    return redirect(url_for("login"))
+            finally:
+                cursor.close()
+                connection.close()
+        elif request.method == "GET":
+                return render_template("login.html")
+
 
     def connect_to_db_user(self):
         return mysql.connector.connect(user='root', password='12345678',
                                        host='127.0.0.1', database='user')
 
-
-
+data_search = dataSearch()
+login_function = Login_function()
+if __name__ == '__main__':
+    app.run(debug=True)
 
 
 
