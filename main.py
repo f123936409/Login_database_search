@@ -3,14 +3,18 @@
 # 使用 nearbysearch 查詢此Location(通常設定經緯度)附近餐廳
 #if __name__ == '__main__': #如果XX.py被直接執行的話 __name__ 就會== __main__
     #app.run(debug=True) #如果XX.py被引用到其他的話 import XX.py __name__ 就!= __main__ __main__就不會執行
-
+#request 要先有發起[POST][GET]才能使用   requests 是構造pest get一起使用的
+#app.config 是 Flask 提供的配置存儲空間。
 import mysql.connector
 import json
 import requests
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for ,jsonify
 from dotenv import load_dotenv
 import os
 from prettytable import PrettyTable
+from flask_jwt_extended import JWTManager ,jwt_required , get_jwt_identity
+from flask_jwt_extended import create_access_token
+from werkzeug.security import generate_password_hash ,check_password_hash
 
 #透過經緯度來查詢此地點附近餐廳 並存資料 規格是json
 #location = '25.01745568776056, 121.40282832703096'
@@ -112,6 +116,10 @@ def main():
     connection.close()
 
 app = Flask(__name__) #導入模組並引用 模組名稱就是 (__name__) 固定
+load_dotenv()
+app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY")
+jwt = JWTManager(app)
+
 class dataSearch:
     def __init__(self):
         self.app = app
@@ -163,18 +171,32 @@ class dataSearch:
 
 
 class Login_function:
-    def __init__(self):
+    def __init__(self,app):
         self.app = app
-        self.app.add_url_rule('/register',view_func=self.register, methods=['POST','GET'])
+        #JWT配置
+        self.app.config["JWT_TOKEN_LOCATION"] = ["cookies"]
+        self.app.config["JWT_ACCESS_COOKIE_NAME"] = "access_token"  # 設定為存入的 Cookie 名稱
+        self.app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY")  # 替換為你的密鑰
+        self.jwt = JWTManager(self.app)
+
+        #URL規則
+        self.app.add_url_rule('/register',view_func=self.register,methods=['POST','GET'])
         self.app.add_url_rule('/login',view_func=self.login,methods=['POST','GET'])
+        self.app.add_url_rule('/error',view_func=self.error_page,methods=['GET'])
+        self.app.add_url_rule('/profile',view_func=self.profile,methods=['GET'])
 
     #@app.route("/register",methods=['POST','GET'])
 #app.route 內容= self.add_url_rule('/',endpoint='',view_func=只需要寫函數名稱不能+(),methods)
+    ###########
+    def error_page(self):
+        return render_template(('error.html'))
+##############
     def register(self):
         if request.method == "POST":
             email = request.form.get("email")
             name = request.form.get("name")
             password = request.form.get("password")
+            hash_password = generate_password_hash(password)#密碼加密
             print(f"Email: {email}, Name: {name}, Password: {password}")
             try:
                 connection = self.connect_to_db_user()
@@ -188,10 +210,10 @@ class Login_function:
                     return render_template("register.html", message="該email 已經被註冊")
                     # 如使用if result : (這邊只有判斷此email 是否為空值 或 none 沒辦法判斷有沒有重複)
                 else:
-                    cursor.execute("insert into user (email, name, password) values (%s, %s, %s)", (email, name, password))
+                    cursor.execute("insert into user (email, name, password) values (%s, %s, %s)", (email, name, hash_password))
                     connection.commit()
                     print("註冊成功")
-                    return redirect(url_for("login"))
+                    return redirect(url_for("login",message="註冊成功"))
 
             except Exception as e:
                 print(f"發生錯誤: {e}")
@@ -212,16 +234,19 @@ class Login_function:
             try:
                 connection = self.connect_to_db_user()
                 cursor = connection.cursor()
-                cursor.execute("SELECT email, password from user where email = %s", (email,))
+                cursor.execute("SELECT name, password from user where email = %s", (email,))
                 result = cursor.fetchone()
                 if result:
-                    db_email, db_password = result  # 解包 result
-                    if password == db_password:
-                        print("login 成功")
-                        return redirect(url_for("index"))
+                    db_name, db_password = result  # 解包 result
+                    if check_password_hash(db_password,password):
+                        print("登入成功")
+                        access_token = create_access_token(identity=db_name)#(JWT驗證)將access_token存到cookie
+                        response = redirect(url_for("profile",user_id=db_name))
+                        response.set_cookie("access_token", access_token)
+                        return response
                     else:
                         print("密碼錯誤")
-                        return redirect(url_for("login"))
+                        return redirect(url_for("error_page"))
                 else:
                     print("該 email 錯誤 或 尚未被註冊")
                     return redirect(url_for("login"))
@@ -236,8 +261,13 @@ class Login_function:
         return mysql.connector.connect(user='root', password='12345678',
                                        host='127.0.0.1', database='user')
 
+    @jwt_required(locations=["cookies"])  # 從 Cookie 中驗證
+    def profile(self):
+        user_id = get_jwt_identity()
+        return render_template('Profile.html', db_name=user_id)
+
 data_search = dataSearch()
-login_function = Login_function()
+login_function = Login_function(app)
 if __name__ == '__main__':
     app.run(debug=True)
 
