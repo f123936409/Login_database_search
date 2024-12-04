@@ -1,0 +1,38 @@
+header{
+    background-color: #231C1A;
+    height:80px;
+    width:100%;
+    position:relative;
+}
+h1{
+    color:white;
+    position:absolute;
+    left:120px;
+    top:0;
+    line-height:40px;
+}
+header li {
+    display:inline;
+    margin-right:4vw;
+
+}
+
+header a {
+    color:white;
+    text-decoration: none;
+}
+header a:hover{
+    text-decoration: underline;
+}
+header ul{
+    position:absolute;
+    right:5vw;
+    top:0;
+    line-height:50px;
+}
+body img{
+    max-width: 100%;
+    max-height: auto;
+    display: block;
+
+}
