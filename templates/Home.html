@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <title>杉尚煮鍋</title>
+    <link rel="stylesheet" href="{{ url_for('static',filename='style/Home.css')}}">
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+</head>
+<body>
+    <header>
+    <h1>山上煮鍋</h1>
+    <nav class="navbar">
+        <ul>
+            <li><a href="#">關於我們</a></li>
+            <li><a href="#">火鍋菜單</a></li>
+            <li><a href="#">線上訂位</a></li>
+            <li><a href="#">門市據點</a></li>
+        </ul>
+    </nav>
+    </header>
+    <main>
+    <section class="news">
+        <h2>暖心相聚，品味四季湯鍋。</h2>
+        <p>在這裡，感受輕鬆舒適的氛圍，與美味共度每一刻。</p>
+        <p><a href="#">瞭解更多</a></p>
+    </section>
+    <section class="product">
+        <h3>以匠心手法呈現當季新鮮好味</h3>
+        <div class="turn">
+            <a>堅持天然湯底，搭配手工精緻食材，帶來鮮美無比的火鍋料理。期望每一位賓客
+            ，放下生活的壓力，用放鬆與歡樂的心情，享受這一鍋幸福與溫暖。</a>
+        <button class="prev" onclick="prevSlide()">&#10094;</button>
+        <div class="slides">
+            <img src="/static/images/spy.jpg" alt="Dish 1">
+            <img src="/static/images/nor.jpg" alt="Dish 2">
+            <img src="/static/images/med.jpg" alt="Dish 3">
+            <img src="/static/images/beef.jpg" alt="Dish 3">
+            <img src="/static/images/beef2.jpg" alt="Dish 3">
+            <img src="/static/images/seafood2.jpg" alt="Dish 3">
+        </div>
+        <button class="next" onclick="nextSlide()">&#10095;</button>
+        <div class="font-btn">
+            <p><a href="#">更多餐點</a></p>
+        </div>
+        </div>
+    </section>
+    </main>
+    <footer class="footer">
+        <div class="row">
+            <div class="footer_box">
+                <ul>
+                    <li>
+                        <i class='bx bxs-phone'></i>
+                        <a>(02) 8791-4776</a>
+                    </li>
+                    <li>
+                        <i class='bx bx-map'></i>
+                        <a href="https://www.google.com.tw/maps/place/%E6%9D%89%E5%B0%9A%E7%85%AE%E9%8D%8B/@25.0691271,121.5932631,780m/data=!3m2!1e3!4b1!4m6!3m5!1s0x3442adad861c8d7d:0xcd1f0686c1274248!8m2!3d25.0691271!4d121.5932631!16s%2Fg%2F11t4yy7l_c?hl=zh-TW&entry=ttu&g_ep=EgoyMDI0MTEyNC4xIKXMDSoASAFQAw%3D%3D">114台灣台北市內湖區民權東路六段127號</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <div class="row2">
+            <div class="footer_box">
+                <ol>
+                    <li>
+                        <a href="https://www.facebook.com/shanshanghotpot">
+                            <i class='bx bxl-facebook-circle'></i>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="https://www.instagram.com/shanshang_tw/">
+                            <i class='bx bxl-instagram-alt'></i>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="https://line.me/R/ti/p/@ehg9536h">
+                            <i class='bx bx-qr-scan'></i>
+                        </a>
+                    </li>
+                </ol>
+            </div>
+        </div>
+    </footer>
+    <script src="{{url_for('static', filename='js/script.js') }}?v=1.0"></script>
+</body>
+</html>
