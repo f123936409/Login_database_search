@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 ####################如要查詢指定餐廳訊息 使用place_id 並可設定他回傳的訊息 例如評論之類
 # fields=name,rating,formatted_address,formatted_phone_number,review&
 # 使用 nearbysearch 查詢此Location(通常設定經緯度)附近餐廳
@@ -351,3 +352,20 @@ if __name__ == '__main__':
 
 
 
+=======
+from flask import Flask, render_template ,request , redirect ,url_for ,jsonify
+import os
+
+class page:
+    def __init__(self,app):
+        self.app = app
+        self.app.add_url_rule('/',view_func=self.guest)
+
+    def guest(self):
+        return render_template("Home.html")
+
+app = Flask(__name__)
+page = page(app)
+if __name__ == '__main__':
+    app.run(debug=True)
+>>>>>>> 058e33c3f815aa0c2c8f2aeafa602c0c505b4313

@@ -3,22 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <title>註冊</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/register.css') }}">
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
 </head>
 <body>
-    <h1>註冊帳號</h1>
-    <form action="{{ url_for('register') }}" method="post">
-        <label for="email">用戶信箱:</label>
-        <input type="text" name="email" placeholder="email">
-        <br>
-        <label for="name">用戶名稱:</label>
-        <input type="text" name="name" placeholder="name">
-        <br>
-        <label for="password">用戶密碼:</label>
-        <input type="text" name="password" placeholder="password">
-        <br>
-        <button type="submit">確認</button>
-    </form>
-
+    <div class="wrapper">
+        <form action="{{ url_for('register') }}" method="post" class="register">
+            <h1>註冊帳號</h1>
+            <div class="input-box">
+                <input type="text" name="email" placeholder="信箱 email">
+                <i class='bx bx-user-circle'></i>
+            </div>
+            <div class="input-box">
+                <input type="text" name="name" placeholder="name">
+                <i class='bx bx-user-pin'></i>
+            </div>
+            <div class="input-box">
+                <input type="text" name="password" placeholder="password">
+                <i class='bx bx-lock'></i>
+            </div>
+            <button type="submit" class="btn">確認</button>
+        </form>
+    </div>
 
 </body>
 </html>
